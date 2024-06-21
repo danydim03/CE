@@ -1,0 +1,68 @@
+//
+//  es1.c
+//  ripasso
+//
+//  Created by Daniele Di Meo on 21/06/24.
+//
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <limits.h>
+#include <errno.h>
+#include <string.h>
+
+#include <stdbool.h>
+
+bool get_long(long *value)
+{
+    char buf[BUFSIZ];
+    char *endptr;
+
+    if (!fgets(buf, sizeof(buf), stdin))
+    {
+        return false;
+    }
+
+    errno = 0; // Reset errno before calling strtol
+    *value = strtol(buf, &endptr, 10);
+
+    if (errno == ERANGE || endptr == buf || (*endptr && *endptr != '\n'))
+    {
+        return false;
+    }
+
+    return true;
+}
+
+int main(int argc, char **argv)
+{
+    
+    long  *array;
+    long arraysize;
+    long a = 0;
+    
+    printf("Inserisci taglia vettore: ");
+    arraysize= atol(argv[1]);
+    if (arraysize <= 0)
+    {
+        printf("taglia non compatibile: ");
+        exit(EXIT_FAILURE);
+    }
+    
+    
+do
+{
+    printf("Inserisci un valore: ");
+    
+    if (get_long(&a))
+    {
+        printf("Hai inserito il numero %ld.\n", a);
+    }
+    else
+    {
+        printf("Errore nell'inserimento del numero.\n");
+    }
+    
+}
+    while(a!=0);
+}
