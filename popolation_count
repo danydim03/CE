@@ -1,0 +1,62 @@
+
+#include <errno.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+bool get_long(long *value) {
+    char buf[BUFSIZ];
+    char *endptr;
+    if (!fgets(buf, 1024, stdin)) {
+        return false;
+    }
+    errno = 0;
+    *value = strtol(buf, &endptr, 10);
+    if (errno == ERANGE || endptr == buf || (*endptr && *endptr != '\n')) {
+        return false;
+    }
+    return true;
+}
+
+long population_count(size_t size, const long array[size]) {
+    long count = 0;
+    for (int i = 0; i < size; ++i) {
+        long value = array[i];
+        while (value) {
+            count++;
+            value &= value - 1;
+        }
+    }
+    return count;
+}
+
+int main(int argc, char **argv) {
+    long array_size;
+    long *array;
+    if (argc != 2) {
+        fprintf(stderr, "Usage: %s <array size>\n", argv[0]);
+        exit(EXIT_FAILURE);
+    }
+    // 0 is not a valid array size, so we can use it to check for invalid input
+    array_size = atol(argv[1]);
+    if (array_size <= 0) {
+        fprintf(stderr, "Invalid array size.\n");
+        exit(EXIT_FAILURE);
+    }
+    array = malloc(array_size * sizeof(*array));
+    if (array == NULL) {
+        perror("Failed to allocate memory");
+        exit(EXIT_FAILURE);
+    }
+    printf("Enter %ld integers:\n", array_size);
+    for (int i = 0; i < array_size; ++i) {
+        if (!get_long(&array[i])) {
+            printf("Invalid input.\n");
+            free(array);
+            exit(EXIT_FAILURE);
+        }
+    }
+    printf("The number of bits set to 1 is %ld.\n", population_count(array_size, array));
+    free(array);
+    return 0;
+}
