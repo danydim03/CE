@@ -37,10 +37,10 @@ bool get_long(long *value)
 int main(int argc, char **argv)
 {
     
-    long  *array;
+   
     long arraysize;
     long a = 0;
-    
+    int i = 0;
     printf("Inserisci taglia vettore: ");
     arraysize= atol(argv[1]);
     if (arraysize <= 0)
@@ -49,7 +49,7 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);
     }
     
-    
+    long  array[arraysize];
 do
 {
     printf("Inserisci un valore: ");
@@ -57,6 +57,7 @@ do
     if (get_long(&a))
     {
         printf("Hai inserito il numero %ld.\n", a);
+        array[i]=a;
     }
     else
     {
@@ -65,4 +66,15 @@ do
     
 }
     while(a!=0);
+    
+    int j=0;
+    while (j != arraysize)
+    {
+        
+        printf("Hai inserito il numero %ld.\n", array[j]);
+        j++;
+    }
+    
+    
+    
 }
