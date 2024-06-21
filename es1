@@ -1,16 +1,8 @@
-//
-//  es1.c
-//  ripasso
-//
-//  Created by Daniele Di Meo on 21/06/24.
-//
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
 #include <errno.h>
 #include <string.h>
-
 #include <stdbool.h>
 
 bool get_long(long *value)
@@ -36,45 +28,57 @@ bool get_long(long *value)
 
 int main(int argc, char **argv)
 {
-    
-   
-    long arraysize;
-    long a = 0;
-    int i = 0;
-    printf("Inserisci taglia vettore: ");
-    arraysize= atol(argv[1]);
-    if (arraysize <= 0)
+    if (argc < 2)
     {
-        printf("taglia non compatibile: ");
+        fprintf(stderr, "Uso: %s <taglia_vettore>\n", argv[0]);
         exit(EXIT_FAILURE);
     }
-    
-    long  array[arraysize];
-do
-{
-    printf("Inserisci un valore: ");
-    
-    if (get_long(&a))
+
+    long arraysize = atol(argv[1]);
+    if (arraysize <= 0)
     {
-        printf("Hai inserito il numero %ld.\n", a);
-        array[i]=a;
+        printf("Taglia non compatibile\n");
+        exit(EXIT_FAILURE);
     }
-    else
+
+    long *array = malloc(arraysize * sizeof(long));
+    if (!array)
     {
-        printf("Errore nell'inserimento del numero.\n");
+        perror("malloc");
+        exit(EXIT_FAILURE);
     }
-    
-}
-    while(a!=0);
-    
-    int j=0;
-    while (j != arraysize)
+
+    long a = 0;
+    int i = 0;
+
+    do
     {
-        
-        printf("Hai inserito il numero %ld.\n", array[j]);
-        j++;
+        printf("Inserisci un valore (0 per terminare): ");
+
+        if (get_long(&a))
+        {
+            if (i >= arraysize)
+            {
+                printf("Numero di valori eccede la taglia del vettore.\n");
+                break;
+            }
+
+            printf("Hai inserito il numero %ld.\n", a);
+            array[i++] = a;
+        }
+        else
+        {
+            printf("Errore nell'inserimento del numero.\n");
+        }
     }
-    
-    
-    
+    while (a != 0);
+
+    printf("Numeri inseriti:\n");
+    for (int j = 0; j < i; ++j)
+    {
+        printf("%ld\n", array[j]);
+    }
+
+    free(array);
+    return 0;
 }
