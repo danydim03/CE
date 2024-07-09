@@ -1,0 +1,105 @@
+//  main.c
+//  ese_miscellanei
+//
+//  Created by Daniele Di Meo on 04/07/24.
+//
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
+
+typedef struct nodo {
+    long value;
+    struct nodo *next;
+} Nodo;
+
+typedef struct Lista {
+    Nodo *head;
+    Nodo *tail;
+} Lista;
+
+Nodo *creaNodo(long value) {
+    Nodo *newNodo = (Nodo *)malloc(sizeof(Nodo));
+    if (newNodo == NULL) {
+        perror("Non è stato possibile allocare il nuovo nodo");
+        exit(EXIT_FAILURE);
+    }
+    newNodo->value = value;
+    newNodo->next = NULL;
+    return newNodo;
+}
+
+void insert_Nodo_Testa(Lista *lista, long value) {
+    Nodo *newNodo = creaNodo(value);
+    if (lista->head == NULL) {
+        lista->head = newNodo;
+        lista->tail = newNodo;
+    } else {
+        newNodo->next = lista->head;
+        lista->head = newNodo;
+    }
+}
+
+void insert_Nodo_Coda(Lista *lista, long value) {
+    Nodo *newNodo = creaNodo(value);
+    if (lista->head == NULL) {
+        lista->head = newNodo;
+        lista->tail = newNodo;
+    } else {
+        lista->tail->next = newNodo;
+        lista->tail = newNodo;
+    }
+}
+
+long leggi_numero(void) {
+    char *buffer = (char *)malloc(BUFSIZ * sizeof(char));
+    if (buffer == NULL) {
+        perror("Errore di allocazione");
+        exit(EXIT_FAILURE);
+    }
+    if (!fgets(buffer, BUFSIZ, stdin)) {
+        perror("Errore non siamo riusciti ad acquisire il numero");
+        exit(EXIT_FAILURE);
+    }
+    char *endptr;
+    long val = strtol(buffer, &endptr, 10);
+    free(buffer);
+    return val;
+}
+
+void stampaLista(Lista *lista) {
+    Nodo *current = lista->head;
+    while (current != NULL) {
+        printf("%ld -> ", current->value);
+        current = current->next;
+    }
+    printf("NULL\n");
+}
+
+
+void stampa_lista_inverse(Nodo *nodo) {
+    if (nodo == NULL) {
+        return;
+    }
+    stampa_lista_inverse(nodo->next);
+    printf("%ld -> ", nodo->value);
+}
+
+
+int main(int argc, const char *argv[]) {
+    Lista lista = {NULL, NULL};
+
+    printf("Inserisci il numero di nodi: ");
+    long n = leggi_numero();
+
+    for (long i = 0; i < n; i++) {
+        printf("Inserisci il valore del nodo %ld: ", i + 1);
+        long val = leggi_numero();
+        insert_Nodo_Coda(&lista, val);
+    }
+
+    printf("Lista: ");
+    stampa_lista_inverse(lista.head);
+
+    return 0;
+}
