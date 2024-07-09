@@ -1,0 +1,60 @@
+//
+//  main.c
+//  es35_bit_invertiti
+//
+//  Created by Daniele Di Meo on 28/06/24.
+//Implementare una funzione invert(unsigned x, int p, int n) che restituisce x con gli n bit partendo
+//dalla posizione p invertiti, lasciando invariati gli altri.
+
+#include <stdio.h>
+#include <stdlib.h>
+
+
+unsigned int inverti( unsigned  int x , int p, int n)
+{
+    
+    for (int j=p; j < n + p ; j++ )
+    {
+       if (x & 1 << j)
+       {
+           x &= ~(1 <<j); // azzero l'iesimo bit
+       }
+        else
+        {
+            x |= 1 << j;
+        }
+        
+    }
+    
+    
+    
+    return x;
+    
+}
+
+
+
+int main(int argc, char * argv[])
+{
+    
+    
+    char buf[1024];
+    unsigned a;
+        do
+        {
+            printf ("inserisci un numero: ");
+            if (!fgets(buf,1024,stdin))
+            {
+                return 1;
+            }
+            a= atoi(buf); // conversione da stringa a intero posso anche usare la funzione strtol
+            // se inserisco un carattere mi trornerà 0 perche non posso convertirlo
+        } while(a==0 );
+    
+    unsigned int res= inverti(a, 2, 16);
+    
+    printf ("il numero inverito è: %u ",res);
+    
+    
+    return 0;
+}
