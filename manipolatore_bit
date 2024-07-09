@@ -1,0 +1,84 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+typedef struct {
+    int value;
+    char description[100];
+} BitManipulator;
+
+BitManipulator *create_bitmanipulator(int value, const char *description) {
+    BitManipulator *bm = (BitManipulator *)malloc(sizeof(BitManipulator));
+    if (bm == NULL) {
+        perror("Errore di allocazione per BitManipulator");
+        exit(EXIT_FAILURE);
+    }
+    bm->value = value;
+    strncpy(bm->description, description, sizeof(bm->description) - 1);
+    bm->description[sizeof(bm->description) - 1] = '\0';
+    return bm;
+}
+
+void set_bit(BitManipulator *bm, int position) {
+    bm->value |= (1 << position);
+}
+
+void clear_bit(BitManipulator *bm, int position) {
+    bm->value &= ~(1 << position);
+}
+
+void toggle_bit(BitManipulator *bm, int position) {
+    bm->value ^= (1 << position);
+}
+
+int check_bit(const BitManipulator *bm, int position) {
+    return (bm->value >> position) & 1;
+}
+
+void print_binary(const BitManipulator *bm) {
+    printf("Value: %s, Binary: ", bm->description);
+    for (int i = 31; i >= 0; i--) {
+        printf("%d", (bm->value >> i) & 1);
+        if (i % 4 == 0) {
+            printf(" ");
+        }
+    }
+    printf("\n");
+}
+
+void bitwise_operations(const BitManipulator *bm1, const BitManipulator *bm2) {
+    printf("Bitwise AND: %08X\n", bm1->value & bm2->value);
+    printf("Bitwise OR: %08X\n", bm1->value | bm2->value);
+    printf("Bitwise XOR: %08X\n", bm1->value ^ bm2->value);
+    printf("Bitwise NOT (bm1): %08X\n", ~bm1->value);
+    printf("Shift left (bm1): %08X\n", bm1->value << 1);
+    printf("Shift right (bm2): %08X\n", bm2->value >> 1);
+}
+
+int main() {
+    BitManipulator *bm1 = create_bitmanipulator(0xA5A5A5A5, "Pattern 1");
+    BitManipulator *bm2 = create_bitmanipulator(0x5A5A5A5A, "Pattern 2");
+
+    printf("Initial BitManipulators:\n");
+    print_binary(bm1);
+    print_binary(bm2);
+
+    printf("\nSetting, Clearing, and Toggling bits:\n");
+    set_bit(bm1, 0);
+    clear_bit(bm1, 1);
+    toggle_bit(bm1, 2);
+    print_binary(bm1);
+
+    printf("\nChecking bits:\n");
+    printf("Bit 0 of bm1: %d\n", check_bit(bm1, 0));
+    printf("Bit 1 of bm1: %d\n", check_bit(bm1, 1));
+    printf("Bit 2 of bm1: %d\n", check_bit(bm1, 2));
+
+    printf("\nBitwise operations between bm1 and bm2:\n");
+    bitwise_operations(bm1, bm2);
+
+    free(bm1);
+    free(bm2);
+
+    return 0;
+}
