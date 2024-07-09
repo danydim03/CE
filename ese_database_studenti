@@ -1,0 +1,230 @@
+//
+//  main.c
+//  traccia1chat
+//
+//  Created by Daniele Di Meo on 09/07/24.
+//./programma "Nome1,Età1,Voto1,Voto2,...,VotoN" "Nome2,Età2,Voto1,Voto2,...,VotoN" ...
+//./programma "Mario Rossi,21,28,30,25" "Luca Bianchi,22,27,26,30,29"
+
+
+
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <errno.h>
+
+
+typedef struct studente
+{
+    char *nome;
+    int eta;
+    int num_voti;
+    int *voti;
+    
+}Studente;
+
+typedef struct database
+{
+    Studente **elenco_studenti;
+    int num_studenti;
+    
+}Database;
+
+
+Studente *crea_studente(char * nome, int eta, int num_voti, int *voti)
+{
+    Studente *new_studente = (Studente *)malloc(sizeof(Studente));
+    if(new_studente == NULL)
+    {
+        perror("errore di allocazione per lo studente");
+        free(new_studente);
+        exit(EXIT_FAILURE);
+        
+    }
+    
+    new_studente->nome = strdup(nome);
+    new_studente->eta = eta;
+    new_studente->num_voti = num_voti;
+    
+    new_studente->voti= (int *)malloc(num_voti * sizeof(int));
+    new_studente->voti=voti;
+    
+//    devo prendere i dati da dati e poi metterli nei vari campi
+    
+    return new_studente;
+    
+}
+
+
+void aggiungi_studente(Database *db, char * nome, int eta, int num_voti, int *voti)
+{
+    Studente *new_s= crea_studente(nome,eta,num_voti,voti);
+    if(new_s == NULL)
+    {
+        perror("allocazione nonm gestita bene");
+        exit(EXIT_FAILURE);
+        
+    }
+    db->elenco_studenti=realloc(db->elenco_studenti, (db ->num_studenti + 1)*sizeof(Studente));
+    if(db == NULL)
+    {
+        perror ("non è possibile allocare memoria aggiuntiva [ERROR_REALLOC] ");
+        free(db);
+        exit(EXIT_FAILURE);
+    }
+    db->elenco_studenti[db->num_studenti]= new_s;
+    db->num_studenti ++ ;
+    
+}
+
+Studente *cerca_studente(const Database *db, const char *nome)
+{
+    
+    for (int i = 0; i <= db->num_studenti; i ++ )
+    {
+        if(strcmp(db->elenco_studenti[i]->nome, nome)== 0 )
+        {
+            return db->elenco_studenti[i];
+        }
+        
+    }
+   
+    
+    
+    return NULL;
+}
+
+void eliminaStudente(Database *db, const char *nome) {
+    for (int i = 0; i < db->num_studenti; i++) {
+        if (strcmp(db->elenco_studenti[i]->nome, nome) == 0) {
+            free(db->elenco_studenti[i]->nome);
+            free(db->elenco_studenti[i]->voti);
+            free(db->elenco_studenti[i]);
+
+            for (int j = i; j < db->num_studenti - 1; j++) { // riordino l'array
+                db->elenco_studenti[j] = db->elenco_studenti[j + 1];
+            }
+
+            db->num_studenti--;
+            db->elenco_studenti = realloc(db->elenco_studenti, db->num_studenti * sizeof(Studente *)); // ridimensiono l'arrray
+            if (db->elenco_studenti == NULL && db->num_studenti > 0) { // controllo sulla dimensione dell array
+                perror("Errore di reallocazione di memoria");
+                exit(EXIT_FAILURE);
+            }
+
+            return;
+        }
+    }
+}
+
+
+float calcola_media(const Studente *studente)
+{
+    float media=0.0,somma=0.0;
+    int n= 0;
+    for(int i=0;i< studente->num_voti;i++)
+    {
+        somma = somma + studente->voti[i];
+    }
+    
+    media= somma/studente->num_voti;
+    return media;
+}
+
+
+
+void ordina_database(Database *db) {
+    int N = db->num_studenti;
+    float vettoreMedie[N];
+    int vettore_indici[N];
+    
+    for (int i = 0; i < N; i++) {
+        vettoreMedie[i] = calcola_media(db->elenco_studenti[i]);
+        vettore_indici[i] = i;
+    }
+    
+    // Bubble sort basato sulle medie
+    for (int i = 0; i < N - 1; i++) {
+        for (int j = 0; j < N - i - 1; j++) {
+            if (vettoreMedie[vettore_indici[j]] > vettoreMedie[vettore_indici[j + 1]]) {
+                // Scambio degli indici
+                int temp = vettore_indici[j];
+                vettore_indici[j] = vettore_indici[j + 1];
+                vettore_indici[j + 1] = temp;
+            }
+        }
+    }
+}
+    
+    
+    
+    char *leggi_stringa(void)
+    {
+        
+        char * buffer= (char *)malloc(BUFSIZ * sizeof(char));
+        if(buffer == NULL )
+        {
+            perror("non è stato possibile allocare memoria per una nuova prenotazione");
+            exit(EXIT_FAILURE);
+            
+        }
+        if(!fgets(buffer,BUFSIZ, stdin))
+        {
+            perror("non è stato possibile prendere l'input");
+            exit(EXIT_FAILURE);
+        }
+        int i=0;
+        size_t len = strlen(buffer);
+        if (buffer[len - 1] == '\n') {
+            buffer[len - 1] = '\0';
+        }
+        
+        return buffer;
+    }
+    
+    long leggi_numero(void)
+    {
+        char *buffer;
+        buffer= (char *)malloc(BUFSIZ * sizeof(char));
+        if(buffer == NULL)
+        {
+            perror("non è stato possibile allocare memoria");
+            exit(EXIT_FAILURE);
+        }
+        if(!fgets(buffer, BUFSIZ, stdin))
+        {
+            perror("non è stato possibile prendere l'input");
+            exit(EXIT_FAILURE);
+        }
+        char * endptr;
+        errno=0;
+        long x = strtol(buffer,&endptr,10);
+        if(errno != 0 || endptr == buffer || *endptr != '\n')
+        {
+            perror("errore nella conversione dell'input");
+            free(buffer);
+            exit(EXIT_FAILURE);
+        }
+        free(buffer);
+        return x;
+    }
+
+
+
+
+
+
+int main(int argc, const char * argv[]) {
+    // insert code here...
+    if(argc < 2)
+    {
+        perror("non ci sono abbastanza argomenti");
+        exit(EXIT_FAILURE);
+    }
+   
+    char **stringhe;
+    
+    
+    printf("Hello, World!\n");
+    return 0;
+}
