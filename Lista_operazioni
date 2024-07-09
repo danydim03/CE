@@ -1,0 +1,169 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+#include <errno.h>
+
+typedef struct item {
+    char *nome;
+    char *codice;
+    struct item *next;
+} item;
+
+item *item_create(char *nome, char *codice) {
+    item *new_item = malloc(sizeof(item));
+    if (new_item == NULL) {
+        perror("Impossibile allocare memoria per questo articolo");
+        exit(1);
+    }
+    new_item->nome = strdup(nome);
+    if (new_item->nome == NULL) {
+        perror("Impossibile allocare memoria per il nome");
+        free(new_item);
+        exit(1);
+    }
+    new_item->codice = strdup(codice);
+    if (new_item->codice == NULL) {
+        perror("Impossibile allocare memoria per il codice");
+        free(new_item->nome);
+        free(new_item);
+        exit(1);
+    }
+    new_item->next = NULL;
+    return new_item;
+}
+
+item *item_inserisci(item **head, item *newitem) {
+    newitem->next = *head;
+    *head = newitem;
+    return *head;
+}
+
+item *rimuovi_item(item **head, char *codice) {
+    item **current = head;
+    while (*current && strcmp((*current)->codice, codice) != 0) {
+        current = &(*current)->next;
+    }
+    if (*current) {
+        item *temp = *current;
+        *current = (*current)->next;
+        free(temp->nome);
+        free(temp->codice);
+        free(temp);
+    }
+    return *head;
+}
+
+void print_item(item *head) {
+    if (head == NULL) {
+        printf("La lista è vuota.\n");
+        return;
+    }
+    
+    printf("Visualizzazione lista:\n");
+    while (head) {
+        printf("Nome: %s\n", head->nome);
+        printf("Codice: %s\n", head->codice);
+        printf("----\n");
+        head = head->next;
+    }
+}
+
+bool get_long(long *value) {
+    char buf[BUFSIZ];
+    char *endptr;
+
+    if (!fgets(buf, sizeof(buf), stdin)) {
+        return false;
+    }
+
+    errno = 0;
+    *value = strtol(buf, &endptr, 10);
+
+    if (errno == ERANGE || endptr == buf || (*endptr && *endptr != '\n')) {
+        return false;
+    }
+
+    return true;
+}
+
+void inserimento(item **head) {
+    long num = 0;
+    printf("Quanti articoli vuoi inserire? ");
+    if (get_long(&num) && num > 0) {
+        char name[100];
+        char codice[100];
+
+        for (long i = 0; i < num; i++) {
+            printf("Nome dell'articolo: ");
+            if (fgets(name, sizeof(name), stdin)) {
+                name[strcspn(name, "\n")] = 0;
+            }
+            printf("Codice dell'articolo: ");
+            if (fgets(codice, sizeof(codice), stdin)) {
+                codice[strcspn(codice, "\n")] = 0;
+            }
+            item *new_item = item_create(name, codice);
+            item_inserisci(head, new_item);
+        }
+    } else {
+        printf("Numero non valido. Operazione annullata.\n");
+    }
+}
+
+void rimuovi_articolo(item **head) {
+    char codice[100];
+    printf("Inserisci il codice dell'articolo da rimuovere: ");
+    if (fgets(codice, sizeof(codice), stdin)) {
+        codice[strcspn(codice, "\n")] = 0;
+        rimuovi_item(head, codice);
+    }
+}
+
+void libera_lista(item *head) {
+    while (head) {
+        item *temp = head;
+        head = head->next;
+        free(temp->nome);
+        free(temp->codice);
+        free(temp);
+    }
+}
+
+int main(int argc, char *argv[]) {
+    item *head = NULL;
+
+    while (1) {
+        long x = 0;
+        printf("\nScegli un'opzione:\n");
+        printf("1: Inserimento\n");
+        printf("2: Visualizza articoli\n");
+        printf("3: Rimuovi articolo\n");
+        printf("0: Uscita\n");
+        printf("Scelta: ");
+        if (get_long(&x)) {
+            switch (x) {
+                case 1:
+                    inserimento(&head);
+                    break;
+                case 2:
+                    print_item(head);
+                    break;
+                case 3:
+                    rimuovi_articolo(&head);
+                    break;
+                case 0:
+                    printf("Uscita dal programma\n");
+                    libera_lista(head);
+                    return 0;
+                default:
+                    printf("Scelta non valida.\n");
+                    break;
+            }
+        } else {
+            printf("Input non valido. Riprova.\n");
+        }
+    }
+
+    return 0;
+}
