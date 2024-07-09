@@ -1,0 +1,61 @@
+#include <stdio.h>
+#include <stdbool.h>
+
+// Funzione per impostare un bit a 1
+unsigned int set_bit(unsigned int num, int bit_position) {
+    return num | (1 << bit_position);
+}
+
+// Funzione per azzerare un bit (impostarlo a 0)
+unsigned int clear_bit(unsigned int num, int bit_position) {
+    return num & ~(1 << bit_position);
+}
+
+// Funzione per controllare il valore di un bit
+bool check_bit(unsigned int num, int bit_position) {
+    return (num & (1 << bit_position)) != 0;
+}
+
+// Funzione per invertire un bit
+unsigned int toggle_bit(unsigned int num, int bit_position) {
+    return num ^ (1 << bit_position);
+}
+
+// Funzione per contare il numero di bit impostati a 1
+int count_set_bits(unsigned int num) {
+    int count = 0;
+    while (num) {
+        count += num & 1;
+        num >>= 1;
+    }
+    return count;
+}
+
+int main() {
+    unsigned int num = 0x0F; // 0000 1111
+    int bit_position = 5;
+
+    printf("Numero originale: %u (0x%X)\n", num, num);
+
+    // Impostare un bit a 1
+    num = set_bit(num, bit_position);
+    printf("Numero dopo impostare il bit %d a 1: %u (0x%X)\n", bit_position, num, num);
+
+    // Azzerare un bit
+    num = clear_bit(num, bit_position);
+    printf("Numero dopo azzerare il bit %d: %u (0x%X)\n", bit_position, num, num);
+
+    // Controllare il valore di un bit
+    bool is_set = check_bit(num, bit_position);
+    printf("Il bit %d è %s\n", bit_position, is_set ? "impostato a 1" : "impostato a 0");
+
+    // Invertire un bit
+    num = toggle_bit(num, bit_position);
+    printf("Numero dopo invertire il bit %d: %u (0x%X)\n", bit_position, num, num);
+
+    // Contare i bit impostati a 1
+    int set_bits_count = count_set_bits(num);
+    printf("Numero di bit impostati a 1: %d\n", set_bits_count);
+
+    return 0;
+}
