@@ -1,0 +1,75 @@
+#include <errno.h>
+#include <limits.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+bool get_int(long *value) {
+    char buf[1024];
+    bool ret;
+    char *endptr;
+    
+    printf("Inserire un numero intero: ");
+    if (!fgets(buf, 1024, stdin)) {
+        return false;
+    }
+    
+    errno = 0;
+    *value = strtol(buf, &endptr, 10);
+    
+    if (errno == ERANGE) {
+        printf("Il numero inserito non è rappresentabile.\n");
+        ret = false;
+    } else if (endptr == buf || (*endptr != '\n' && *endptr != '\0')) {
+        printf("Input non valido\n");
+        ret = false;
+    } else {
+        ret = true;
+    }
+    
+    return ret;
+}
+
+bool twos_complement(void) {
+    return (int)UINT_MAX == -1;
+}
+
+bool is_little_endian(void) {
+    unsigned short x = 1;
+    return *(char *)(&x) == 1;
+}
+
+#define MAX_BITS (int)(sizeof(long) * CHAR_BIT)
+static char string[MAX_BITS + 1];
+
+char *to_binary(long value) {
+    int i;
+    char *p = string + MAX_BITS;
+    p[0] = '\0';
+    
+    for (i = 0; i < MAX_BITS; i++) {
+        *--p = (value & 1) ? '1' : '0';
+        value >>= 1;
+    }
+    
+    return p;
+}
+
+int main(void) {
+    long value;
+    
+    if (!get_int(&value)) {
+        exit(EXIT_FAILURE);
+    }
+    
+    printf("Il numero inserito è %s\n", value < 0 ? "NEGATIVO" : "POSITIVO");
+    printf("La rappresentazione%s utilizza il complemento a due.\n", twos_complement() ? "" : " non");
+    printf("La macchina usa la rappresentazione %s ENDIAN\n\n", is_little_endian() ? "LITTLE" : "BIG");
+    
+    puts("Codifiche del valore inserito:");
+    printf("Decimale: %ld\n", value);
+    printf("Esadecimale: %#lx\n", value);
+    printf("Binario: %s\n", to_binary(value));
+    
+    return 0;
+}
