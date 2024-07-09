@@ -1,9 +1,3 @@
-//  main.c
-//  ese_miscellanei
-//
-//  Created by Daniele Di Meo on 04/07/24.
-//
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -59,10 +53,17 @@ long leggi_numero(void) {
     }
     if (!fgets(buffer, BUFSIZ, stdin)) {
         perror("Errore non siamo riusciti ad acquisire il numero");
+        free(buffer);
         exit(EXIT_FAILURE);
     }
     char *endptr;
+    errno = 0;  // Reset errno before calling strtol
     long val = strtol(buffer, &endptr, 10);
+    if (errno != 0 || endptr == buffer || *endptr != '\n') {
+        perror("Errore nella conversione del numero");
+        free(buffer);
+        exit(EXIT_FAILURE);
+    }
     free(buffer);
     return val;
 }
@@ -76,7 +77,6 @@ void stampaLista(Lista *lista) {
     printf("NULL\n");
 }
 
-
 void stampa_lista_inverse(Nodo *nodo) {
     if (nodo == NULL) {
         return;
@@ -85,6 +85,16 @@ void stampa_lista_inverse(Nodo *nodo) {
     printf("%ld -> ", nodo->value);
 }
 
+void liberaLista(Lista *lista) {
+    Nodo *current = lista->head;
+    while (current != NULL) {
+        Nodo *next = current->next;
+        free(current);
+        current = next;
+    }
+    lista->head = NULL;
+    lista->tail = NULL;
+}
 
 int main(int argc, const char *argv[]) {
     Lista lista = {NULL, NULL};
@@ -98,8 +108,11 @@ int main(int argc, const char *argv[]) {
         insert_Nodo_Coda(&lista, val);
     }
 
-    printf("Lista: ");
+    printf("Lista inversa: ");
     stampa_lista_inverse(lista.head);
+    printf("NULL\n");
+
+    liberaLista(&lista);
 
     return 0;
 }
